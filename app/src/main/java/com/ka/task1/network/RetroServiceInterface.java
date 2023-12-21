@@ -15,6 +15,7 @@ public interface RetroServiceInterface {
             @Query("page") int page,
             @Query("format") String format,
             @Query("nojsoncallback") int noJsonCallback,
-            @Query("extras") String extras
+            @Query("extras") String extras,
+            @Query("text") String searchText // new parameter for search text
     );
 }

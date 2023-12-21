@@ -22,30 +22,39 @@ public class RetroRepository {
         this.retroServiceInterface = retroServiceInterface;
     }
 
-    public void makeAPICall(String apiKey, MutableLiveData<List<Photo>> recentPhotos) {
+    public interface RetryCallback {
+        void onRetry();
+    }
+
+    public void makeAPICall(String apiKey, String searchText, MutableLiveData<List<Photo>> recentPhotos, RetryCallback retryCallback) {
         Call<RecyclerList> call = retroServiceInterface.getRecentPhotos(
-                "flickr.photos.getRecent",
+                "flickr.photos.search",
                 apiKey,
-                70, // per_page
+                10, // per_page
                 1,  // page
                 "json",
                 1,  // nojsoncallback
-                "url_s"
+                "url_s",
+                searchText
         );
+
         Log.d("YourActivity", "API Request URL: " + call.request().url());
 
-        if (call.request().url().toString().equals("https://api.flickr.com/services/rest/?method=flickr.photos.getRecent&per_page=20&page=1&api_key=6f102c62f41998d151e5a1b48713cf13&format=json&nojsoncallback=1&extras=url_s")) {
-            Log.d("YourActivity", "API Request URL: " + call.request().url());
-        }
         call.enqueue(new Callback<RecyclerList>() {
             @Override
             public void onResponse(Call<RecyclerList> call, Response<RecyclerList> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     recentPhotos.postValue(response.body().getPhotos().getItems());
+
                 } else {
                     // Handle API error
                     Log.e("YourActivity", "API Error: " + response.code() + " " + response.message());
                     recentPhotos.postValue(null);
+
+                    // Trigger retry callback on network failure
+                    if (retryCallback != null) {
+                        retryCallback.onRetry();
+                    }
                 }
             }
 
@@ -58,6 +67,11 @@ public class RetroRepository {
 
                 // Handle network failure
                 recentPhotos.postValue(null);
+
+                // Trigger retry callback on network failure
+                if (retryCallback != null) {
+                    retryCallback.onRetry();
+                }
             }
         });
     }

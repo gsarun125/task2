@@ -28,9 +28,4 @@ public class MainActivityViewModel extends ViewModel {
     public MutableLiveData<List<Photo>> getLiveData() {
         return recentPhotos;
     }
-
-    public void makeApiCall() {
-        RetroRepository retroRepository = new RetroRepository(retroServiceInterface);
-        retroRepository.makeAPICall("us", recentPhotos);
-    }
 }
