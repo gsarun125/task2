@@ -1,3 +1,4 @@
+// RetroServiceInterface.java
 package com.ka.task1.network;
 
 import com.ka.task1.model.RecyclerList;
@@ -16,6 +17,6 @@ public interface RetroServiceInterface {
             @Query("format") String format,
             @Query("nojsoncallback") int noJsonCallback,
             @Query("extras") String extras,
-            @Query("text") String searchText // new parameter for search text
+            @Query("text") String searchText
     );
 }

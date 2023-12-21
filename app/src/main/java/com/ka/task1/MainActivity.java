@@ -1,12 +1,12 @@
-// MainActivity.java
 package com.ka.task1;
 
 import android.os.Bundle;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModelProvider;
+import androidx.paging.PagedList;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,15 +22,12 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
-
-    PhotoAdapter photoAdapter;
+    private MutableLiveData<PagedList<Photo>> recentPhotos;
     public static final String BASE_URL = "https://api.flickr.com/";
     public static final String API_KEY = "6f102c62f41998d151e5a1b48713cf13"; // Replace with your actual API key
-    private MutableLiveData<List<Photo>> recentPhotos;
-    private Snackbar retrySnackbar;
+    public static PhotoAdapter photoAdapter;
     private RetroRepository repository;
-
-
+    private Snackbar retrySnackbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,17 +38,12 @@ public class MainActivity extends AppCompatActivity {
         showRetrySnackbar();
     }
 
-
-
-
-
     private void initRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.recycleimg);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        photoAdapter = new PhotoAdapter();
+        photoAdapter = new PhotoAdapter(PhotoAdapter.DIFF_CALLBACK);
         recyclerView.setAdapter(photoAdapter);
     }
-
     private void setRecyclerView() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
@@ -59,30 +51,24 @@ public class MainActivity extends AppCompatActivity {
                 .build();
 
         RetroServiceInterface service = retrofit.create(RetroServiceInterface.class);
-        recentPhotos = new MutableLiveData<>();
         repository = new RetroRepository(service);
 
-        // Make the initial API call with the search text
-        makeApiCall("cat");
+        // Create a LiveData<PagedList<Photo>> using the repository
+        LiveData<PagedList<Photo>> pagedListLiveData = repository.getPagedListLiveData(API_KEY, "cat", 10);
 
         // Observe the result
-        recentPhotos.observe(this, photos -> {
+        pagedListLiveData.observe(this, photos -> {
             Log.d("YourActivity", "Received photos: " + photos);
-            if (photos != null) {
-                photoAdapter.setData(photos);
-            }
+            photoAdapter.submitList(photos);
         });
     }
 
-    private void makeApiCall(String searchText) {
-        repository.makeAPICall(API_KEY, searchText, recentPhotos, null);
-    }
 
     private void showRetrySnackbar() {
         retrySnackbar = Snackbar.make(findViewById(R.id.container), "Network failure. Retry?", Snackbar.LENGTH_INDEFINITE);
         retrySnackbar.setAction("Retry", v -> {
             // Perform retry action
-            makeApiCall("cat");
+
         });
         retrySnackbar.show();
     }

@@ -34,7 +34,7 @@ android {
 }
 
 dependencies {
-    implementation ("androidx.paging:paging-runtime:3.2.1")
+    implementation ("androidx.paging:paging-runtime:3.0.1")
 
 
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
