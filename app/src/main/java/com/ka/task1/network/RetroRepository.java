@@ -34,21 +34,41 @@ public class RetroRepository {
         this.retroServiceInterface = retroServiceInterface;
     }
 
+    /**
+     * An interface for handling retry actions.
+     */
     public interface RetryCallback {
         void onRetry();
     }
 
-    // Set retry callback
+    /**
+     * Set retry callback
+     */
+
     public void setRetryCallback(RetryCallback retryCallback) {
         this.retryCallback = retryCallback;
     }
 
-    // Method for initial data load
+    /**
+     * Method for initial data load
+     *
+     * @param apiKey
+     * @param searchText
+     * @param page
+     * @param initialCallback
+     */
     public void loadInitial(String apiKey, String searchText, int page, PageKeyedDataSource.LoadInitialCallback<Integer, Photo> initialCallback) {
         makeAPICall(apiKey, searchText, page, initialCallback, null, null);
     }
 
-    // Method for subsequent data loads
+    /**
+     * Method for subsequent data loads
+     *
+     * @param apiKey
+     * @param searchText
+     * @param page
+     * @param callback
+     */
     public void loadAfter(String apiKey, String searchText, int page, PageKeyedDataSource.LoadCallback<Integer, Photo> callback) {
         Handler handler = new Handler(Looper.getMainLooper());
         handler.post(() -> {
@@ -63,6 +83,16 @@ public class RetroRepository {
         makeAPICall(apiKey, searchText, page, null, callback, handler);
     }
 
+    /**
+     * Makes an API call to retrieve data from the server.
+     *
+     * @param apiKey          The API key for authentication.
+     * @param searchText      The text to be searched.
+     * @param page            The page number for pagination.
+     * @param initialCallback Callback for initial data load (can be null for subsequent data loads).
+     * @param callback        Callback for subsequent data loads (can be null for initial data load).
+     * @param handler         A handler to post actions on the main thread.
+     */
     private void makeAPICall(String apiKey, String searchText, int page, PageKeyedDataSource.LoadInitialCallback<Integer, Photo> initialCallback, PageKeyedDataSource.LoadCallback<Integer, Photo> callback, Handler handler) {
         Call<RecyclerList> call = retroServiceInterface.getRecentPhotos(
                 "flickr.photos.search",
@@ -113,7 +143,14 @@ public class RetroRepository {
         });
     }
 
-
+    /**
+     * Returns a LiveData containing a PagedList of Photo objects.
+     *
+     * @param apiKey     The API key for authentication.
+     * @param searchText The text to be searched.
+     * @param pageSize   The number of items loaded at a time in the PagedList.
+     * @return A LiveData object containing the PagedList of Photo objects.
+     */
     public LiveData<PagedList<Photo>> getPagedListLiveData(String apiKey, String searchText, int pageSize) {
         PagedList.Config config = new PagedList.Config.Builder()
                 .setPageSize(pageSize)

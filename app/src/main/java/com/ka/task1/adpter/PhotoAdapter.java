@@ -37,6 +37,10 @@ public class PhotoAdapter extends PagedListAdapter<Photo, PhotoAdapter.ViewHolde
         }
     }
 
+    /**
+     * ViewHolder class for holding references to views inside each item of the RecyclerView.
+     * Typically used in an adapter for efficient view recycling.
+     */
     static class ViewHolder extends RecyclerView.ViewHolder {
         ImageView imageView;
 
@@ -46,6 +50,10 @@ public class PhotoAdapter extends PagedListAdapter<Photo, PhotoAdapter.ViewHolde
         }
     }
 
+    /**
+     * DiffUtil.ItemCallback for comparing Photo items in a list.
+     * Used to efficiently update the contents of a RecyclerView.
+     */
     public static final DiffUtil.ItemCallback<Photo> DIFF_CALLBACK = new DiffUtil.ItemCallback<Photo>() {
         @Override
         public boolean areItemsTheSame(@NonNull Photo oldItem, @NonNull Photo newItem) {

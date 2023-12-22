@@ -29,5 +29,4 @@ public class AppModule {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
     }
-
 }

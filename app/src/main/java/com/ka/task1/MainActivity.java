@@ -27,7 +27,7 @@ import java.util.List;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity implements RetroRepository.RetryCallback{
+public class MainActivity extends AppCompatActivity implements RetroRepository.RetryCallback {
     private MutableLiveData<PagedList<Photo>> recentPhotos;
     public static final String BASE_URL = "https://api.flickr.com/";
     public static final String API_KEY = "6f102c62f41998d151e5a1b48713cf13"; // Replace with your actual API key
@@ -70,6 +70,9 @@ public class MainActivity extends AppCompatActivity implements RetroRepository.R
         setRecyclerView();
     }
 
+    /**
+     * Initializes the RecyclerView and sets up its layout manager and adapter.
+     */
     private void initRecyclerView() {
         RecyclerView recyclerView = findViewById(R.id.recycleimg);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -77,6 +80,9 @@ public class MainActivity extends AppCompatActivity implements RetroRepository.R
         recyclerView.setAdapter(photoAdapter);
     }
 
+    /**
+     * Sets up the RecyclerView, initializes Retrofit, and loads data into the adapter.
+     */
     private void setRecyclerView() {
         searchResultProgressBar.setVisibility(View.VISIBLE);
         Retrofit retrofit = new Retrofit.Builder()
@@ -103,6 +109,9 @@ public class MainActivity extends AppCompatActivity implements RetroRepository.R
         });
     }
 
+    /**
+     * Shows a Snackbar with a retry option for handling network failures.
+     */
 
     private void showRetrySnackbar() {
         retrySnackbar = Snackbar.make(findViewById(R.id.container), "Network failure. Retry?", Snackbar.LENGTH_INDEFINITE);
@@ -113,6 +122,11 @@ public class MainActivity extends AppCompatActivity implements RetroRepository.R
         retrySnackbar.show();
     }
 
+    /**
+     * Implementation of the RetryCallback interface method.
+     * This method is called when a retry action is requested.
+     * It shows a Snackbar with a retry option for handling network failures.
+     */
     @Override
     public void onRetry() {
         showRetrySnackbar();
