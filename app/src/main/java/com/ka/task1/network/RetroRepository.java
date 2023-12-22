@@ -9,6 +9,7 @@ import androidx.paging.PagedList;
 
 import com.ka.task1.model.Photo;
 import com.ka.task1.model.RecyclerList;
+import com.ka.task1.paging.PhotoBoundaryCallback;
 import com.ka.task1.paging.PhotoDataSourceFactory;
 
 import java.util.List;
@@ -20,11 +21,18 @@ import retrofit2.Response;
 public class RetroRepository {
 
     private RetroServiceInterface retroServiceInterface;
-
+    private RetryCallback retryCallback;
     public RetroRepository(RetroServiceInterface retroServiceInterface) {
         this.retroServiceInterface = retroServiceInterface;
     }
+    public interface RetryCallback {
+        void onRetry();
+    }
 
+    // Set retry callback
+    public void setRetryCallback(RetryCallback retryCallback) {
+        this.retryCallback = retryCallback;
+    }
     // Method for initial data load
     public void loadInitial(String apiKey, String searchText, int page, PageKeyedDataSource.LoadInitialCallback<Integer, Photo> initialCallback) {
         makeAPICall(apiKey, searchText, page, initialCallback, null);
@@ -63,7 +71,9 @@ public class RetroRepository {
                         callback.onResult(photos, page + 1);
                     }
                 } else {
-                    // Handle API error
+                    if (retryCallback != null) {
+                        retryCallback.onRetry();
+                    }
                     Log.e("YourActivity", "API Error: " + response.code() + " " + response.message());
                 }
             }
@@ -72,7 +82,9 @@ public class RetroRepository {
             public void onFailure(Call<RecyclerList> call, Throwable t) {
                 Log.e("YourActivity", "API Call Failure: " + t.getMessage());
 
-                // Log the request URL
+                if (retryCallback != null) {
+                    retryCallback.onRetry();
+                }
                 Log.e("YourActivity", "API Request URL: " + call.request().url());
             }
         });
@@ -86,6 +98,8 @@ public class RetroRepository {
 
         PhotoDataSourceFactory dataSourceFactory = new PhotoDataSourceFactory(this, apiKey, searchText);
 
-        return new LivePagedListBuilder<>(dataSourceFactory, config).build();
+        return new LivePagedListBuilder<>(dataSourceFactory, config)
+                .setBoundaryCallback(new PhotoBoundaryCallback(this, apiKey, searchText))
+                .build();
     }
 }

@@ -17,4 +17,9 @@ public class Photo {
     public String getUrl() {
         return url;
     }
+    private int page;
+
+    public int getPage() {
+        return page;
+    }
 }

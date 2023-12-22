@@ -14,10 +14,29 @@
         android:layout_marginBottom="40dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+        <EditText
+            android:id="@+id/Hsearchbox"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_below="@+id/lineardate"
+            android:layout_marginStart="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginEnd="6dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginBottom="10dp"
+            android:layout_toStartOf="@+id/reportbutton"
+            android:background="@drawable/edit_text_bg"
+            android:drawableRight="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp"
+            android:hint="Search-Bill no/Name/Mobile no"
+            android:padding="5dp"
+            android:singleLine="true"
+            android:textColor="@android:color/black" />
+
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycleimg"
-            android:layout_margin="10dp"
-
+            android:layout_marginTop="60dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
     </FrameLayout>

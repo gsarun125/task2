@@ -1,7 +1,10 @@
 package com.ka.task1;
 
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
+import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
@@ -21,21 +24,43 @@ import java.util.List;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements RetroRepository.RetryCallback{
     private MutableLiveData<PagedList<Photo>> recentPhotos;
     public static final String BASE_URL = "https://api.flickr.com/";
     public static final String API_KEY = "6f102c62f41998d151e5a1b48713cf13"; // Replace with your actual API key
     public static PhotoAdapter photoAdapter;
     private RetroRepository repository;
     private Snackbar retrySnackbar;
+    EditText search;
+    String key = "a";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        search = findViewById(R.id.Hsearchbox);
+        search.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable editable) {
+                if (search.length() != 0) {
+                    key = search.getText().toString();
+                } else {
+                    key = "a";
+                }
+                setRecyclerView();
+
+            }
+        });
         initRecyclerView();
         setRecyclerView();
-        showRetrySnackbar();
     }
 
     private void initRecyclerView() {
@@ -44,6 +69,7 @@ public class MainActivity extends AppCompatActivity {
         photoAdapter = new PhotoAdapter(PhotoAdapter.DIFF_CALLBACK);
         recyclerView.setAdapter(photoAdapter);
     }
+
     private void setRecyclerView() {
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
@@ -53,8 +79,9 @@ public class MainActivity extends AppCompatActivity {
         RetroServiceInterface service = retrofit.create(RetroServiceInterface.class);
         repository = new RetroRepository(service);
 
+        repository.setRetryCallback(this);
         // Create a LiveData<PagedList<Photo>> using the repository
-        LiveData<PagedList<Photo>> pagedListLiveData = repository.getPagedListLiveData(API_KEY, "cat", 10);
+        LiveData<PagedList<Photo>> pagedListLiveData = repository.getPagedListLiveData(API_KEY, key, 10);
 
         // Observe the result
         pagedListLiveData.observe(this, photos -> {
@@ -68,8 +95,13 @@ public class MainActivity extends AppCompatActivity {
         retrySnackbar = Snackbar.make(findViewById(R.id.container), "Network failure. Retry?", Snackbar.LENGTH_INDEFINITE);
         retrySnackbar.setAction("Retry", v -> {
             // Perform retry action
-
+            setRecyclerView();
         });
         retrySnackbar.show();
+    }
+
+    @Override
+    public void onRetry() {
+        showRetrySnackbar();
     }
 }
