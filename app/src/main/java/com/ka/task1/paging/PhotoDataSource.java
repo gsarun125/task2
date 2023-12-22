@@ -26,7 +26,7 @@ public class PhotoDataSource extends PageKeyedDataSource<Integer, Photo> {
 
     @Override
     public void loadBefore(@NonNull LoadParams<Integer> params, @NonNull LoadCallback<Integer, Photo> callback) {
-        // Not used in your case
+
     }
 
     @Override

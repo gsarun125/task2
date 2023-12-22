@@ -1,6 +1,13 @@
 package com.ka.task1.network;
 
+import static com.ka.task1.MainActivity.searchResultProgressBar;
+
+import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.lifecycle.LiveData;
 import androidx.paging.LivePagedListBuilder;
@@ -22,9 +29,11 @@ public class RetroRepository {
 
     private RetroServiceInterface retroServiceInterface;
     private RetryCallback retryCallback;
+
     public RetroRepository(RetroServiceInterface retroServiceInterface) {
         this.retroServiceInterface = retroServiceInterface;
     }
+
     public interface RetryCallback {
         void onRetry();
     }
@@ -33,17 +42,28 @@ public class RetroRepository {
     public void setRetryCallback(RetryCallback retryCallback) {
         this.retryCallback = retryCallback;
     }
+
     // Method for initial data load
     public void loadInitial(String apiKey, String searchText, int page, PageKeyedDataSource.LoadInitialCallback<Integer, Photo> initialCallback) {
-        makeAPICall(apiKey, searchText, page, initialCallback, null);
+        makeAPICall(apiKey, searchText, page, initialCallback, null, null);
     }
 
     // Method for subsequent data loads
     public void loadAfter(String apiKey, String searchText, int page, PageKeyedDataSource.LoadCallback<Integer, Photo> callback) {
-        makeAPICall(apiKey, searchText, page, null, callback);
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> {
+            // UI-related code should be executed on the main thread
+            searchResultProgressBar.setVisibility(View.VISIBLE);
+
+            Context context = searchResultProgressBar.getContext();
+            int pageno = page - 1;
+            Toast.makeText(context, "Loading Page" + pageno + " data...", Toast.LENGTH_SHORT).show();
+        });
+
+        makeAPICall(apiKey, searchText, page, null, callback, handler);
     }
 
-    private void makeAPICall(String apiKey, String searchText, int page, PageKeyedDataSource.LoadInitialCallback<Integer, Photo> initialCallback, PageKeyedDataSource.LoadCallback<Integer, Photo> callback) {
+    private void makeAPICall(String apiKey, String searchText, int page, PageKeyedDataSource.LoadInitialCallback<Integer, Photo> initialCallback, PageKeyedDataSource.LoadCallback<Integer, Photo> callback, Handler handler) {
         Call<RecyclerList> call = retroServiceInterface.getRecentPhotos(
                 "flickr.photos.search",
                 apiKey,
@@ -55,20 +75,23 @@ public class RetroRepository {
                 searchText
         );
 
-        Log.d("YourActivity", "API Request URL: " + call.request().url());
 
         call.enqueue(new Callback<RecyclerList>() {
             @Override
             public void onResponse(Call<RecyclerList> call, Response<RecyclerList> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<Photo> photos = response.body().getPhotos().getItems();
+                    Log.d("YourActivity", "API Request URL: " + call.request().url());
 
                     if (initialCallback != null) {
                         // Load initial data
                         initialCallback.onResult(photos, null, page + 1);
                     } else if (callback != null) {
                         // Load next page
-                        callback.onResult(photos, page + 1);
+                        handler.post(() -> {  // Use Handler to post on the main thread
+                            callback.onResult(photos, page + 1);
+                            searchResultProgressBar.setVisibility(View.GONE);
+                        });
                     }
                 } else {
                     if (retryCallback != null) {
@@ -89,6 +112,7 @@ public class RetroRepository {
             }
         });
     }
+
 
     public LiveData<PagedList<Photo>> getPagedListLiveData(String apiKey, String searchText, int pageSize) {
         PagedList.Config config = new PagedList.Config.Builder()

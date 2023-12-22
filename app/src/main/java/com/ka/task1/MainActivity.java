@@ -1,10 +1,13 @@
 package com.ka.task1;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.View;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.LiveData;
@@ -34,11 +37,15 @@ public class MainActivity extends AppCompatActivity implements RetroRepository.R
     EditText search;
     String key = "a";
 
+    public static ProgressBar searchResultProgressBar;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         search = findViewById(R.id.Hsearchbox);
+        searchResultProgressBar = findViewById(R.id.searchResultProgressBar);
+
         search.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
@@ -71,6 +78,7 @@ public class MainActivity extends AppCompatActivity implements RetroRepository.R
     }
 
     private void setRecyclerView() {
+        searchResultProgressBar.setVisibility(View.VISIBLE);
         Retrofit retrofit = new Retrofit.Builder()
                 .baseUrl(BASE_URL)
                 .addConverterFactory(GsonConverterFactory.create())
@@ -86,7 +94,12 @@ public class MainActivity extends AppCompatActivity implements RetroRepository.R
         // Observe the result
         pagedListLiveData.observe(this, photos -> {
             Log.d("YourActivity", "Received photos: " + photos);
-            photoAdapter.submitList(photos);
+            int delayMillis = 1000;
+            new Handler().postDelayed(() -> {
+
+                photoAdapter.submitList(photos);
+                searchResultProgressBar.setVisibility(View.GONE);
+            }, delayMillis);
         });
     }
 

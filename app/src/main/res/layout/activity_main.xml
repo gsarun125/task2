@@ -9,23 +9,22 @@
     tools:context=".MainActivity">
 
     <!-- Main content -->
-    <FrameLayout
+    <RelativeLayout
         android:id="@+id/container"
-        android:layout_marginBottom="40dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <EditText
             android:id="@+id/Hsearchbox"
             android:layout_width="match_parent"
             android:layout_height="60dp"
-            android:layout_below="@+id/lineardate"
+
             android:layout_marginStart="10dp"
             android:layout_marginLeft="10dp"
             android:layout_marginTop="5dp"
             android:layout_marginEnd="6dp"
             android:layout_marginRight="10dp"
             android:layout_marginBottom="10dp"
-            android:layout_toStartOf="@+id/reportbutton"
             android:background="@drawable/edit_text_bg"
             android:drawableRight="@android:drawable/ic_menu_search"
             android:drawablePadding="8dp"
@@ -37,9 +36,20 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycleimg"
             android:layout_marginTop="60dp"
+            android:layout_marginBottom="60dp"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
-    </FrameLayout>
+
+        <ProgressBar
+            android:id="@+id/searchResultProgressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="10dp"
+            android:visibility="visible" />
+
+    </RelativeLayout>
 
     <!-- Left navigation drawer -->
     <com.google.android.material.navigation.NavigationView
